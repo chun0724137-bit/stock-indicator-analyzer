@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: stock-indicator-analyzer
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /healthz
+    autoDeployTrigger: commit
+    envVars:
+      - key: NODE_VERSION
+        value: 18
