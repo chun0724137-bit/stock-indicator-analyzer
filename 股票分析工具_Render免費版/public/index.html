@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#143b34" />
+  <title>股票技術指標分析</title>
+  <link rel="manifest" href="/manifest.webmanifest" />
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <main class="wrap">
+    <section class="hero">
+      <div class="eyebrow">BOLLINGER · RSI · MACD</div>
+      <h1>股票技術指標分析</h1>
+      <p>輸入股票代號，快速查看布林通道、RSI、MACD、成交量、融資餘額與本益比。</p>
+    </section>
+
+    <section class="panel">
+      <label>股票代號<input id="symbol" value="2330" /></label>
+      <label>市場<select id="market"><option value="auto">自動判斷</option><option value="tw">上市 .TW</option><option value="two">上櫃 .TWO</option><option value="us">美股</option></select></label>
+      <label>分析期間<select id="range"><option value="3mo">近 3 個月</option><option value="6mo" selected>近 6 個月</option><option value="1y">近 1 年</option><option value="2y">近 2 年</option><option value="5y">近 5 年</option></select></label>
+      <button id="analyze">開始分析</button>
+      <details>
+        <summary>進階參數</summary>
+        <div class="grid small">
+          <label>布林天數<input id="bbPeriod" type="number" value="20" /></label>
+          <label>標準差倍數<input id="bbDev" type="number" value="2" step="0.1" /></label>
+          <label>RSI 天數<input id="rsiPeriod" type="number" value="14" /></label>
+          <label>MACD 快線<input id="macdFast" type="number" value="12" /></label>
+          <label>MACD 慢線<input id="macdSlow" type="number" value="26" /></label>
+          <label>MACD 訊號<input id="macdSignal" type="number" value="9" /></label>
+        </div>
+      </details>
+    </section>
+
+    <p id="status" class="status"></p>
+    <section id="mobileHelp" class="mobile-help"></section>
+    <section id="cards" class="cards"></section>
+    <section class="charts">
+      <div><h2>股價與布林通道</h2><svg id="priceChart"></svg></div>
+      <div><h2>成交量</h2><svg id="volumeChart"></svg></div>
+      <div><h2>RSI</h2><svg id="rsiChart"></svg></div>
+      <div><h2>MACD</h2><svg id="macdChart"></svg></div>
+    </section>
+  </main>
+  <script src="/app.js"></script>
+</body>
+</html>
