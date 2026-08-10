@@ -1,6 +1,6 @@
 {
-  "name": "股票技術指標分析",
-  "short_name": "股票分析",
+  "name": "資料指標檢視",
+  "short_name": "資料檢視",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#f6f1e8",
