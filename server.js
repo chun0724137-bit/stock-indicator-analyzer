@@ -54,7 +54,7 @@ function symbolCandidates(raw, market) {
 
 async function fetchYahooChart(symbol, range) {
   const url = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(symbol)}?range=${encodeURIComponent(range)}&interval=1d&events=history`;
-  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" } });
+  const r = await fetch(url, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(12000) });
   if (!r.ok) throw new Error(`Yahoo 回應錯誤 (${r.status})`);
   const data = await r.json();
   const result = data.chart && data.chart.result && data.chart.result[0];
@@ -86,7 +86,7 @@ async function getOfficialData() {
   };
   const entries = await Promise.all(Object.entries(urls).map(async ([k, u]) => {
     try {
-      const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0" } });
+      const r = await fetch(u, { headers: { "User-Agent": "Mozilla/5.0" }, signal: AbortSignal.timeout(6000) });
       return [k, r.ok ? await r.json() : []];
     } catch {
       return [k, []];

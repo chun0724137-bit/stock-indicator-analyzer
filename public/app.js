@@ -192,16 +192,32 @@ function drawMacd(svg, rows){
 
 function card(k,v,s=""){return `<article class="card"><b>${k}</b><strong>${v}</strong><small>${s}</small></article>`}
 
+let analysisId = 0;
+async function fetchJson(url, timeoutMs) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { signal: controller.signal, cache: "no-store" });
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.error || "資料服務暫時無法使用");
+    return data;
+  } catch (error) {
+    if (error.name === "AbortError") throw new Error("資料服務回應逾時，請稍後重新分析");
+    throw error;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
 async function analyze(){
+  const currentId = ++analysisId;
   $("status").className="status";
   $("status").textContent="分析中...";
   try{
     const qs=new URLSearchParams({symbol:$("symbol").value,market:$("market").value,range:$("range").value});
-    const r=await fetch(`/api/stock?${qs}`);
-    const data=await r.json();
-    if(!r.ok) throw new Error(data.error||"無法分析");
+    const data=await fetchJson(`/api/stock?${qs}`, 45000);
+    if (currentId !== analysisId) return;
     let info={};
-    try{info=await (await fetch(`/api/market-info?symbol=${encodeURIComponent(data.symbol)}`)).json()}catch{}
     const rows=indicators(data.candles,+$("bbPeriod").value,+$("bbDev").value,+$("rsiPeriod").value,+$("macdFast").value,+$("macdSlow").value,+$("macdSignal").value);
     const latest=rows.at(-1);
     const pos = latest.close>latest.bbUpper?"突破上緣":latest.close<latest.bbLower?"跌破下緣":"通道內";
@@ -223,7 +239,21 @@ async function analyze(){
     drawLines($("rsiChart"),rows,[{key:"rsi",cls:"rsi"}],[0,100]);
     drawMacd($("macdChart"),rows);
     $("status").textContent=`完成：${data.symbol}`;
+    // Supplemental data must not delay the price charts.
+    try {
+      info = await fetchJson(`/api/market-info?symbol=${encodeURIComponent(data.symbol)}`, 10000);
+      if (currentId !== analysisId) return;
+      const diff = info.marginBalance != null && info.marginPrevious != null
+        ? info.marginBalance - info.marginPrevious : null;
+      const cards = $("cards").children;
+      cards[5].outerHTML = card("融資餘額", info.marginBalance == null ? "—" : `${fmt(info.marginBalance)} 張`,
+        diff == null ? info.source || "官方資料未提供" : `${info.date || ""} 較前日 ${diff >= 0 ? "+" : ""}${fmt(diff)} 張`);
+      $("cards").children[6].outerHTML = card("本益比", fmt(info.peRatio), info.source || "官方資料未提供");
+    } catch {
+      if (currentId === analysisId) $("status").textContent = `完成：${data.symbol}（融資／本益比暫時無法取得）`;
+    }
   }catch(e){
+    if (currentId !== analysisId) return;
     $("status").className="status err";
     $("status").textContent=`無法分析：${e.message}`;
   }
